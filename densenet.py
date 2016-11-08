@@ -11,7 +11,7 @@ import keras.backend as K
 concat_axis = 1 if K.image_dim_ordering() == "th" else -1
 
 def conv_block(ip, nb_filter, dropout_rate=None, weight_decay=1E-4):
-    ''' Apply BatchNorm, Relu 3x3Conv2D, optional dropout
+    ''' Apply BatchNorm, Relu 3x3, Conv2D, optional dropout
 
     Args:
         ip: Input keras tensor
@@ -35,7 +35,7 @@ def conv_block(ip, nb_filter, dropout_rate=None, weight_decay=1E-4):
 
 
 def transition(ip, nb_filter, dropout_rate=None, weight_decay=1E-4):
-    ''' Apply BatchNorm, Relu 1x1Conv2D, optional dropout and Maxpooling2D
+    ''' Apply BatchNorm, Relu 1x1, Conv2D, optional dropout and Maxpooling2D
 
     Args:
         ip: keras tensor
