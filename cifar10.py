@@ -13,7 +13,7 @@ from keras import backend as K
 
 batch_size = 64
 nb_classes = 10
-nb_epoch = 10
+nb_epoch = 150
 
 img_rows, img_cols = 32, 32
 img_channels = 3
