@@ -34,7 +34,7 @@ def conv_block(ip, nb_filter, dropout_rate=None, weight_decay=1E-4):
     return x
 
 
-def transition(ip, nb_filter, dropout_rate=None, weight_decay=1E-4):
+def transition_block(ip, nb_filter, dropout_rate=None, weight_decay=1E-4):
     ''' Apply BatchNorm, Relu 1x1, Conv2D, optional dropout and Maxpooling2D
 
     Args:
@@ -59,8 +59,8 @@ def transition(ip, nb_filter, dropout_rate=None, weight_decay=1E-4):
     return x
 
 
-def denseblock(x, nb_layers, nb_filter, growth_rate, dropout_rate=None, weight_decay=1E-4):
-    ''' Build a denseblock where the output of each conv_block is fed to subsequent ones
+def dense_block(x, nb_layers, nb_filter, growth_rate, dropout_rate=None, weight_decay=1E-4):
+    ''' Build a dense_block where the output of each conv_block is fed to subsequent ones
 
     Args:
         x: keras tensor
@@ -85,8 +85,9 @@ def denseblock(x, nb_layers, nb_filter, growth_rate, dropout_rate=None, weight_d
     return x, nb_filter
 
 
-def DenseNet(nb_classes, img_dim, depth, nb_dense_block, growth_rate, nb_filter, dropout_rate=None, weight_decay=1E-4):
-    ''' Build the DenseNet model
+def create_dense_net(nb_classes, img_dim, depth=40, nb_dense_block=1, growth_rate=12, nb_filter=16, dropout_rate=None,
+                     weight_decay=1E-4):
+    ''' Build the create_dense_net model
 
     Args:
         nb_classes: number of classes
@@ -115,14 +116,14 @@ def DenseNet(nb_classes, img_dim, depth, nb_dense_block, growth_rate, nb_filter,
 
     # Add dense blocks
     for block_idx in range(nb_dense_block - 1):
-        x, nb_filter = denseblock(x, nb_layers, nb_filter, growth_rate, dropout_rate=dropout_rate,
-                                  weight_decay=weight_decay)
-        # add transition
-        x = transition(x, nb_filter, dropout_rate=dropout_rate, weight_decay=weight_decay)
+        x, nb_filter = dense_block(x, nb_layers, nb_filter, growth_rate, dropout_rate=dropout_rate,
+                                   weight_decay=weight_decay)
+        # add transition_block
+        x = transition_block(x, nb_filter, dropout_rate=dropout_rate, weight_decay=weight_decay)
 
-    # The last denseblock does not have a transition
-    x, nb_filter = denseblock(x, nb_layers, nb_filter, growth_rate, dropout_rate=dropout_rate,
-                              weight_decay=weight_decay)
+    # The last dense_block does not have a transition_block
+    x, nb_filter = dense_block(x, nb_layers, nb_filter, growth_rate, dropout_rate=dropout_rate,
+                               weight_decay=weight_decay)
 
     x = BatchNormalization(mode=0, axis=concat_axis, gamma_regularizer=l2(weight_decay),
                            beta_regularizer=l2(weight_decay))(x)
@@ -130,6 +131,6 @@ def DenseNet(nb_classes, img_dim, depth, nb_dense_block, growth_rate, nb_filter,
     x = GlobalAveragePooling2D()(x)
     x = Dense(nb_classes, activation='softmax', W_regularizer=l2(weight_decay), b_regularizer=l2(weight_decay))(x)
 
-    densenet = Model(input=model_input, output=x, name="DenseNet")
+    densenet = Model(input=model_input, output=x, name="create_dense_net")
 
     return densenet
