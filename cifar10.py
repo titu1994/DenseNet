@@ -47,8 +47,8 @@ generator = ImageDataGenerator(rotation_range=15,
 generator.fit(trainX, seed=0, augment=True)
 
 # Load model
-model.load_weights("weights/DenseNet-40-12-CIFAR10.h5")
-print("Model loaded.")
+# model.load_weights("weights/DenseNet-40-12-CIFAR10.h5")
+# print("Model loaded.")
 
 model.fit_generator(generator.flow(trainX, Y_train, batch_size=batch_size), samples_per_epoch=len(trainX), nb_epoch=nb_epoch,
                    callbacks=[ModelCheckpoint("weights/DenseNet-40-12-CIFAR10.h5", monitor="val_acc", save_best_only=True,
