@@ -90,7 +90,7 @@ def dense_block(x, nb_layers, nb_filter, growth_rate, dropout_rate=None, weight_
 
 
 def create_dense_net(nb_classes, img_dim, depth=40, nb_dense_block=1, growth_rate=12, nb_filter=16, dropout_rate=None,
-                     weight_decay=1E-4):
+                     weight_decay=1E-4, verbose=True):
     ''' Build the create_dense_net model
 
     Args:
@@ -138,5 +138,7 @@ def create_dense_net(nb_classes, img_dim, depth=40, nb_dense_block=1, growth_rat
     x = Dense(nb_classes, activation='softmax', W_regularizer=l2(weight_decay), b_regularizer=l2(weight_decay))(x)
 
     densenet = Model(input=model_input, output=x, name="create_dense_net")
+
+    if verbose: print("DenseNet-%d-%d created." % (depth, growth_rate))
 
     return densenet
