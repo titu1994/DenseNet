@@ -26,7 +26,7 @@ def conv_block(ip, nb_filter, dropout_rate=None, weight_decay=1E-4):
     x = BatchNormalization(mode=0, axis=concat_axis, gamma_regularizer=l2(weight_decay),
                            beta_regularizer=l2(weight_decay))(ip)
     x = Activation('relu')(x)
-    x = Convolution2D(nb_filter, 3, 3, init="he_uniform", border_mode="same", ias=False,
+    x = Convolution2D(nb_filter, 3, 3, init="he_uniform", border_mode="same", bias=False,
                       W_regularizer=l2(weight_decay))(x)
     if dropout_rate:
         x = Dropout(dropout_rate)(x)
