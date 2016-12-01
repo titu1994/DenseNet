@@ -89,7 +89,7 @@ def dense_block(x, nb_layers, nb_filter, growth_rate, dropout_rate=None, weight_
     return x, nb_filter
 
 
-def create_dense_net(nb_classes, img_dim, depth=40, nb_dense_block=1, growth_rate=12, nb_filter=16, dropout_rate=None,
+def create_dense_net(nb_classes, img_dim, depth=40, nb_dense_block=3, growth_rate=12, nb_filter=16, dropout_rate=None,
                      weight_decay=1E-4, verbose=True):
     ''' Build the create_dense_net model
 
