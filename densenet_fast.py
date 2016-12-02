@@ -8,6 +8,10 @@ from keras.layers.normalization import BatchNormalization
 from keras.regularizers import l2
 import keras.backend as K
 
+'''
+Based on the implementation here : https://github.com/Lasagne/Recipes/blob/master/papers/densenet/densenet_fast.py
+'''
+
 def conv_block(ip, nb_filter, dropout_rate=None, weight_decay=1E-4):
     ''' Apply BatchNorm, Relu 3x3, Conv2D, optional dropout
 
