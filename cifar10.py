@@ -23,14 +23,14 @@ depth = 40
 nb_dense_block = 3
 growth_rate = 12
 nb_filter = 16
-dropout_rate = 0.2
+dropout_rate = 0.0 # 0.0 for data augmentation
 
-model = densenet.DenseNet(nb_classes, img_dim, depth, nb_dense_block, growth_rate, nb_filter,
+model = densenet.create_dense_net(nb_classes, img_dim, depth, nb_dense_block, growth_rate, nb_filter,
                                   dropout_rate=dropout_rate)
 print("Model created")
 
 model.summary()
-optimizer = Adam()
+optimizer = Adam(lr=1e-4) # Using Adam instead of SGD to speed up training
 model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=["accuracy"])
 print("Finished compiling")
 print("Building model...")
@@ -40,21 +40,21 @@ print("Building model...")
 Y_train = np_utils.to_categorical(trainY, nb_classes)
 Y_test = np_utils.to_categorical(testY, nb_classes)
 
-generator = ImageDataGenerator(rotation_range=15,
+generator = ImageDataGenerator(rotation_range=10,
                                width_shift_range=5./32,
                                height_shift_range=5./32)
 
 generator.fit(trainX, seed=0, augment=True)
 
 # Load model
-# model.load_weights("weights/DenseNet-40-12-CIFAR10.h5")
-# print("Model loaded.")
+model.load_weights("weights/DenseNet-40-12-CIFAR10.h5")
+print("Model loaded.")
 
-model.fit_generator(generator.flow(trainX, Y_train, batch_size=batch_size), samples_per_epoch=len(trainX), nb_epoch=nb_epoch,
-                   callbacks=[ModelCheckpoint("weights/DenseNet-40-12-CIFAR10.h5", monitor="val_acc", save_best_only=True,
-                                              save_weights_only=True)],
-                   validation_data=(testX, Y_test),
-                   nb_val_samples=testX.shape[0],)
+# model.fit_generator(generator.flow(trainX, Y_train, batch_size=batch_size), samples_per_epoch=len(trainX), nb_epoch=nb_epoch,
+#                    callbacks=[ModelCheckpoint("weights/DenseNet-40-12-CIFAR10.h5", monitor="val_acc", save_best_only=True,
+#                                               save_weights_only=True)],
+#                    validation_data=(testX, Y_test),
+#                    nb_val_samples=testX.shape[0], verbose=1)
 
 yPreds = model.predict(testX)
 yPred = np.argmax(yPreds, axis=1)
