@@ -8,12 +8,13 @@ from keras.layers.normalization import BatchNormalization
 from keras.regularizers import l2
 import keras.backend as K
 
-def conv_block(ip, nb_filter, dropout_rate=None, weight_decay=1E-4):
-    ''' Apply BatchNorm, Relu 3x3, Conv2D, optional dropout
+def conv_block(ip, nb_filter, bottleneck=False, dropout_rate=None, weight_decay=1E-4):
+    ''' Apply BatchNorm, Relu 3x3, Conv2D, optional bottleneck block and dropout
 
     Args:
         ip: Input keras tensor
         nb_filter: number of filters
+        bottleneck: add bottleneck block
         dropout_rate: dropout rate
         weight_decay: weight decay factor
 
@@ -26,6 +27,20 @@ def conv_block(ip, nb_filter, dropout_rate=None, weight_decay=1E-4):
     x = BatchNormalization(mode=0, axis=concat_axis, gamma_regularizer=l2(weight_decay),
                            beta_regularizer=l2(weight_decay))(ip)
     x = Activation('relu')(x)
+
+    if bottleneck:
+        inter_channel = nb_filter * 4 # Obtained from https://github.com/liuzhuang13/DenseNet/blob/master/densenet.lua
+
+        x = Convolution2D(inter_channel, 1, 1, init='he_uniform', border_mode='same', bias=False,
+                          W_regularizer=l2(weight_decay))(x)
+
+        if dropout_rate:
+            x = Dropout(dropout_rate)(x)
+
+        x = BatchNormalization(mode=0, axis=concat_axis, gamma_regularizer=l2(weight_decay),
+                           beta_regularizer=l2(weight_decay))(x)
+        x = Activation('relu')(x)
+
     x = Convolution2D(nb_filter, 3, 3, init="he_uniform", border_mode="same", bias=False,
                       W_regularizer=l2(weight_decay))(x)
     if dropout_rate:
@@ -34,8 +49,8 @@ def conv_block(ip, nb_filter, dropout_rate=None, weight_decay=1E-4):
     return x
 
 
-def transition_block(ip, nb_filter, dropout_rate=None, weight_decay=1E-4):
-    ''' Apply BatchNorm, Relu 1x1, Conv2D, optional dropout and Maxpooling2D
+def transition_block(ip, nb_filter, compression=1.0, dropout_rate=None, weight_decay=1E-4):
+    ''' Apply BatchNorm, Relu 1x1, Conv2D, optional compression, dropout and Maxpooling2D
 
     Args:
         ip: keras tensor
@@ -52,7 +67,7 @@ def transition_block(ip, nb_filter, dropout_rate=None, weight_decay=1E-4):
     x = BatchNormalization(mode=0, axis=concat_axis, gamma_regularizer=l2(weight_decay),
                            beta_regularizer=l2(weight_decay))(ip)
     x = Activation('relu')(x)
-    x = Convolution2D(nb_filter, 1, 1, init="he_uniform", border_mode="same", bias=False,
+    x = Convolution2D(int(nb_filter * compression), 1, 1, init="he_uniform", border_mode="same", bias=False,
                       W_regularizer=l2(weight_decay))(x)
     if dropout_rate:
         x = Dropout(dropout_rate)(x)
@@ -61,7 +76,7 @@ def transition_block(ip, nb_filter, dropout_rate=None, weight_decay=1E-4):
     return x
 
 
-def dense_block(x, nb_layers, nb_filter, growth_rate, dropout_rate=None, weight_decay=1E-4):
+def dense_block(x, nb_layers, nb_filter, growth_rate, bottleneck=False, dropout_rate=None, weight_decay=1E-4):
     ''' Build a dense_block where the output of each conv_block is fed to subsequent ones
 
     Args:
@@ -69,6 +84,7 @@ def dense_block(x, nb_layers, nb_filter, growth_rate, dropout_rate=None, weight_
         nb_layers: the number of layers of conv_block to append to the model.
         nb_filter: number of filters
         growth_rate: growth rate
+        bottleneck: bottleneck block
         dropout_rate: dropout rate
         weight_decay: weight decay factor
 
@@ -81,7 +97,7 @@ def dense_block(x, nb_layers, nb_filter, growth_rate, dropout_rate=None, weight_
     feature_list = [x]
 
     for i in range(nb_layers):
-        x = conv_block(x, growth_rate, dropout_rate, weight_decay)
+        x = conv_block(x, growth_rate, bottleneck, dropout_rate, weight_decay)
         feature_list.append(x)
         x = merge(feature_list, mode='concat', concat_axis=concat_axis)
         nb_filter += growth_rate
@@ -89,8 +105,8 @@ def dense_block(x, nb_layers, nb_filter, growth_rate, dropout_rate=None, weight_
     return x, nb_filter
 
 
-def create_dense_net(nb_classes, img_dim, depth=40, nb_dense_block=3, growth_rate=12, nb_filter=16, dropout_rate=None,
-                     weight_decay=1E-4, verbose=True):
+def create_dense_net(nb_classes, img_dim, depth=40, nb_dense_block=3, growth_rate=12, nb_filter=-1,
+                     bottleneck=False, reduction=0.0, dropout_rate=None, weight_decay=1E-4, verbose=True):
     ''' Build the create_dense_net model
 
     Args:
@@ -100,6 +116,8 @@ def create_dense_net(nb_classes, img_dim, depth=40, nb_dense_block=3, growth_rat
         nb_dense_block: number of dense blocks to add to end
         growth_rate: number of filters to add
         nb_filter: number of filters
+        bottleneck: add bottleneck blocks
+        reduction: reduction factor of transition blocks. Note : reduction value is inverted to compute compression
         dropout_rate: dropout rate
         weight_decay: weight decay
 
@@ -112,9 +130,20 @@ def create_dense_net(nb_classes, img_dim, depth=40, nb_dense_block=3, growth_rat
     concat_axis = 1 if K.image_dim_ordering() == "th" else -1
 
     assert (depth - 4) % 3 == 0, "Depth must be 3 N + 4"
+    assert reduction <= 1.0 and reduction > 0.0, "reduction value must lie between 0.0 and 1.0"
 
     # layers in each dense block
     nb_layers = int((depth - 4) / 3)
+
+    if bottleneck:
+        nb_layers = int(nb_layers // 2)
+
+    # compute initial nb_filter if -1, else accept users initial nb_filter
+    if nb_filter <= 0:
+        nb_filter = 2 * growth_rate
+
+    # compute compression factor
+    compression = 1.0 - reduction
 
     # Initial convolution
     x = Convolution2D(nb_filter, 3, 3, init="he_uniform", border_mode="same", name="initial_conv2D", bias=False,
@@ -122,14 +151,16 @@ def create_dense_net(nb_classes, img_dim, depth=40, nb_dense_block=3, growth_rat
 
     # Add dense blocks
     for block_idx in range(nb_dense_block - 1):
-        x, nb_filter = dense_block(x, nb_layers, nb_filter, growth_rate, dropout_rate=dropout_rate,
-                                   weight_decay=weight_decay)
+        x, nb_filter = dense_block(x, nb_layers, nb_filter, growth_rate, bottleneck=bottleneck,
+                                   dropout_rate=dropout_rate, weight_decay=weight_decay)
         # add transition_block
-        x = transition_block(x, nb_filter, dropout_rate=dropout_rate, weight_decay=weight_decay)
+        x = transition_block(x, nb_filter, compression=compression, dropout_rate=dropout_rate,
+                             weight_decay=weight_decay)
+        nb_filter = int(nb_filter * compression)
 
     # The last dense_block does not have a transition_block
-    x, nb_filter = dense_block(x, nb_layers, nb_filter, growth_rate, dropout_rate=dropout_rate,
-                               weight_decay=weight_decay)
+    x, nb_filter = dense_block(x, nb_layers, nb_filter, growth_rate, bottleneck=bottleneck,
+                               dropout_rate=dropout_rate, weight_decay=weight_decay)
 
     x = BatchNormalization(mode=0, axis=concat_axis, gamma_regularizer=l2(weight_decay),
                            beta_regularizer=l2(weight_decay))(x)
@@ -139,6 +170,20 @@ def create_dense_net(nb_classes, img_dim, depth=40, nb_dense_block=3, growth_rat
 
     densenet = Model(input=model_input, output=x, name="create_dense_net")
 
-    if verbose: print("DenseNet-%d-%d created." % (depth, growth_rate))
+    if verbose:
+        if bottleneck and not reduction:
+            print("Bottleneck DenseNet-B-%d-%d created." % (depth, growth_rate))
+        elif not bottleneck and reduction > 0.0:
+            print("DenseNet-C-%d-%d with %0.1f compression created." % (depth, growth_rate, compression))
+        elif bottleneck and reduction > 0.0:
+            print("Bottleneck DenseNet-BC-%d-%d with %0.1f compression created." % (depth, growth_rate, compression))
+        else:
+            print("DenseNet-%d-%d created." % (depth, growth_rate))
 
     return densenet
+
+
+if __name__ == '__main__':
+    model = create_dense_net(10, (3, 32, 32), depth=100, bottleneck=True, reduction=0.5)
+
+    #model.summary()
