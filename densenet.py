@@ -18,7 +18,7 @@ def conv_block(ip, nb_filter, bottleneck=False, dropout_rate=None, weight_decay=
         dropout_rate: dropout rate
         weight_decay: weight decay factor
 
-    Returns: keras tensor with batch_norm, relu and convolution2d added
+    Returns: keras tensor with batch_norm, relu and convolution2d added (optional bottleneck)
 
     '''
 
@@ -113,9 +113,9 @@ def create_dense_net(nb_classes, img_dim, depth=40, nb_dense_block=3, growth_rat
         nb_classes: number of classes
         img_dim: tuple of shape (channels, rows, columns) or (rows, columns, channels)
         depth: number or layers
-        nb_dense_block: number of dense blocks to add to end
-        growth_rate: number of filters to add
-        nb_filter: number of filters
+        nb_dense_block: number of dense blocks to add to end (generally = 3)
+        growth_rate: number of filters to add per dense block
+        nb_filter: initial number of filters. Default -1 indicates initial number of filters is 2 * growth_rate
         bottleneck: add bottleneck blocks
         reduction: reduction factor of transition blocks. Note : reduction value is inverted to compute compression
         dropout_rate: dropout rate
@@ -184,6 +184,6 @@ def create_dense_net(nb_classes, img_dim, depth=40, nb_dense_block=3, growth_rat
 
 
 if __name__ == '__main__':
-    model = create_dense_net(10, (3, 32, 32), depth=100, bottleneck=True, reduction=0.5)
+    model = create_dense_net(nb_classes=10, img_dim=(3, 32, 32), depth=40, growth_rate=12, bottleneck=True, reduction=0.5)
 
     #model.summary()

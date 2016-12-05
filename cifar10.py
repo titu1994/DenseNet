@@ -40,28 +40,30 @@ print("Building model...")
 Y_train = np_utils.to_categorical(trainY, nb_classes)
 Y_test = np_utils.to_categorical(testY, nb_classes)
 
-generator = ImageDataGenerator(rotation_range=10,
+generator = ImageDataGenerator(featurewise_center=True,
+                               featurewise_std_normalization=True,
+                               rotation_range=10,
                                width_shift_range=5./32,
                                height_shift_range=5./32)
 
 generator.fit(trainX, seed=0, augment=True)
 
+test_generator = ImageDataGenerator(featurewise_center=True,
+                                    featurewise_std_normalization=True)
+
+test_generator.fit(testX, augment=True, seed=0)
+
 # Load model
 model.load_weights("weights/DenseNet-40-12-CIFAR10.h5")
 print("Model loaded.")
 
-# model.fit_generator(generator.flow(trainX, Y_train, batch_size=batch_size), samples_per_epoch=len(trainX), nb_epoch=nb_epoch,
-#                    callbacks=[ModelCheckpoint("weights/DenseNet-40-12-CIFAR10.h5", monitor="val_acc", save_best_only=True,
-#                                               save_weights_only=True)],
-#                    validation_data=(testX, Y_test),
-#                    nb_val_samples=testX.shape[0], verbose=1)
+model.fit_generator(generator.flow(trainX, Y_train, batch_size=batch_size), samples_per_epoch=len(trainX), nb_epoch=nb_epoch,
+                   callbacks=[ModelCheckpoint("weights/DenseNet-40-12-CIFAR10.h5", monitor="val_acc", save_best_only=True,
+                                              save_weights_only=True)],
+                   validation_data=test_generator.flow(testX, testY, batch_size=batch_size),
+                   nb_val_samples=testX.shape[0], verbose=1)
 
-yPreds = model.predict(testX)
-yPred = np.argmax(yPreds, axis=1)
-yTrue = testY
-
-accuracy = metrics.accuracy_score(yTrue, yPred) * 100
-error = 100 - accuracy
-print("Accuracy : ", accuracy)
-print("Error : ", error)
+scores = model.evaluate_generator(test_generator.flow(testX, testY, nb_epoch), testX.shape[0])
+print("Accuracy = %f" % (100 * scores[1]))
+print("Error = %f" % (100 - 100 * scores[1]))
 
