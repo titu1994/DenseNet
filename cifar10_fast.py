@@ -37,14 +37,17 @@ print("Building model...")
 
 (trainX, trainY), (testX, testY) = cifar10.load_data()
 
+trainX = trainX.astype('float32')
+testX = testX.astype('float32')
+
 Y_train = np_utils.to_categorical(trainY, nb_classes)
 Y_test = np_utils.to_categorical(testY, nb_classes)
 
-generator = ImageDataGenerator(rotation_range=10,
+generator = ImageDataGenerator(rotation_range=15,
                                width_shift_range=5./32,
                                height_shift_range=5./32)
 
-generator.fit(trainX, seed=0, augment=True)
+generator.fit(trainX, seed=0)
 
 # Load model
 model.load_weights("weights/DenseNet-Fast-40-12-CIFAR10.h5")
