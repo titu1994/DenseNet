@@ -55,6 +55,8 @@ Weights for the DenseNet-40-12 model are provided which have been trained on CIF
 1. Run the cifar10.py script to train the DenseNet 40 model 
 2. Comment out the `model.fit_generator(...)` line and uncomment the `model.load_weights("weights/DenseNet-40-12-CIFAR10.h5")` line to test the classification accuracy.
 
+The current classification accuracy of DenseNet-40-12 is 94.74 %, compared to the accuracy given in the paper - 94.76 %.
+
 # Requirements
 
 - Keras
