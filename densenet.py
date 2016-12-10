@@ -120,6 +120,7 @@ def create_dense_net(nb_classes, img_dim, depth=40, nb_dense_block=3, growth_rat
         reduction: reduction factor of transition blocks. Note : reduction value is inverted to compute compression
         dropout_rate: dropout rate
         weight_decay: weight decay
+        verbose: print the model type
 
     Returns: keras tensor with nb_layers of conv_block appended
 
@@ -187,4 +188,4 @@ def create_dense_net(nb_classes, img_dim, depth=40, nb_dense_block=3, growth_rat
 if __name__ == '__main__':
     model = create_dense_net(nb_classes=10, img_dim=(3, 32, 32), depth=40, growth_rate=12, bottleneck=True, reduction=0.5)
 
-    #model.summary()
+    model.summary()
