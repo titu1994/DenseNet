@@ -50,7 +50,7 @@ model = densenet.create_dense_net(nb_classes=10, img_dim=image_dim, depth=40, gr
 								   bottleneck=True, reduction=0.5)
 ```
 
-Weights for the DenseNet-40-12 model are provided which have been trained on CIFAR 10
+Weights for the DenseNet-40-12 model are provided ([in the release tab](https://github.com/titu1994/DenseNet/releases)) which have been trained on CIFAR 10. Please extract the appropriate weight file and add it to your weights directory. The default one is for Theano Backend with TH dim ordering.
 
 1. Run the cifar10.py script to train the DenseNet 40 model 
 2. Comment out the `model.fit_generator(...)` line and uncomment the `model.load_weights("weights/DenseNet-40-12-CIFAR10.h5")` line to test the classification accuracy.
