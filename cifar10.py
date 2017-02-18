@@ -10,12 +10,8 @@ from keras.datasets import cifar10
 from keras.utils import np_utils
 from keras.preprocessing.image import ImageDataGenerator
 from keras.optimizers import Adam
-from keras.callbacks import CSVLogger, ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
+from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
 from keras import backend as K
-
-
-import tensorflow as tf
-import datetime
 
 batch_size = 64
 nb_classes = 10
