@@ -31,8 +31,9 @@ reduction = 0.5
 dropout_rate = 0.0 # 0.0 for data augmentation
 
 
-model = densenet.create_dense_net(nb_classes, img_dim, depth, nb_dense_block, growth_rate, nb_filter,
-                                  bottleneck=bottleneck, reduction=reduction, dropout_rate=dropout_rate)
+model = densenet.DenseNet(img_dim, classes=nb_classes, depth=depth, nb_dense_block=nb_dense_block,
+                          growth_rate=growth_rate, nb_filter=nb_filter, dropout_rate=dropout_rate,
+                          bottleneck=bottleneck, reduction=reduction)
 print("Model created")
 
 model.summary()

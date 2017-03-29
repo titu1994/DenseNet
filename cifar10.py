@@ -27,8 +27,8 @@ growth_rate = 12
 nb_filter = 16
 dropout_rate = 0.0 # 0.0 for data augmentation
 
-model = densenet.create_dense_net(nb_classes, img_dim, depth, nb_dense_block, growth_rate, nb_filter,
-                                  dropout_rate=dropout_rate)
+model = densenet.DenseNet(img_dim, classes=nb_classes, depth=depth, nb_dense_block=nb_dense_block,
+                          growth_rate=growth_rate, nb_filter=nb_filter, dropout_rate=dropout_rate)
 print("Model created")
 
 model.summary()
