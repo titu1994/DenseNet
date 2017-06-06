@@ -381,10 +381,11 @@ def __dense_block(x, nb_layers, nb_filter, growth_rate, bottleneck=False, dropou
     x_list = [x]
 
     for i in range(nb_layers):
-        x = __conv_block(x, growth_rate, bottleneck, dropout_rate, weight_decay)
-        x_list.append(x)
+        cb = __conv_block(x, growth_rate, bottleneck, dropout_rate, weight_decay)
+        x_list.append(cb)
 
-        x = concatenate(x_list, axis=concat_axis)
+        # x = concatenate(x_list, axis=concat_axis)
+        x = concatenate([x, cb], axis=concat_axis)
 
         if grow_nb_filters:
             nb_filter += growth_rate
@@ -613,14 +614,14 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
         x = concatenate([t, skip_list[block_idx]], axis=concat_axis)
 
         # Dont allow the feature map size to grow in upsampling dense blocks
-        _, nb_filter, concat_list = __dense_block(x, nb_layers[nb_dense_block + block_idx + 1], nb_filter=growth_rate,
-                                                  growth_rate=growth_rate, dropout_rate=dropout_rate,
-                                                  weight_decay=weight_decay,
-                                                  return_concat_list=True, grow_nb_filters=False)
+        x_up, nb_filter, concat_list = __dense_block(x, nb_layers[nb_dense_block + block_idx + 1], nb_filter=growth_rate,
+                                                     growth_rate=growth_rate, dropout_rate=dropout_rate,
+                                                     weight_decay=weight_decay,
+                                                     return_concat_list=True, grow_nb_filters=False)
 
     if include_top:
         x = Conv2D(nb_classes, (1, 1), activation='linear', padding='same', kernel_regularizer=l2(weight_decay),
-                   use_bias=False)(x)
+                   use_bias=False)(x_up)
 
         if K.image_data_format() == 'channels_first':
             channel, row, col = input_shape
