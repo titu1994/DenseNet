@@ -627,10 +627,11 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
             channel, row, col = input_shape
         else:
             row, col, channel = input_shape
-            x = x_up
 
         x = Reshape((row * col, nb_classes))(x)
         x = Activation(activation)(x)
         x = Reshape((row, col, nb_classes))(x)
+    else:
+        x = x_up
 
     return x
