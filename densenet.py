@@ -504,7 +504,7 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
     x = GlobalAveragePooling2D()(x)
 
     if include_top:
-        x = Dense(nb_classes, activation=activation, W_regularizer=l2(weight_decay), b_regularizer=l2(weight_decay))(x)
+        x = Dense(nb_classes, activation=activation, kernel_regularizer=l2(weight_decay), bias_regularizer=l2(weight_decay))(x)
 
     return x
 
@@ -635,3 +635,9 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
         x = x_up
 
     return x
+
+if __name__ == '__main__':
+
+    model = DenseNet((32, 32, 3), depth=40, growth_rate=12, nb_filter=16)
+
+    model.summary()
