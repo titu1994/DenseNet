@@ -384,8 +384,8 @@ def __dense_block(x, nb_layers, nb_filter, growth_rate, bottleneck=False, dropou
         cb = __conv_block(x, growth_rate, bottleneck, dropout_rate, weight_decay)
         x_list.append(cb)
 
-        # x = concatenate(x_list, axis=concat_axis)
-        x = concatenate([x, cb], axis=concat_axis)
+        x = concatenate(x_list, axis=concat_axis)
+        #x = concatenate([x, cb], axis=concat_axis)
 
         if grow_nb_filters:
             nb_filter += growth_rate
@@ -638,6 +638,9 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
 
 if __name__ == '__main__':
 
-    model = DenseNet((32, 32, 3), depth=40, growth_rate=12, nb_filter=16)
-
+    from keras.utils.vis_utils import plot_model
+    model = DenseNetFCN((32, 32, 3), growth_rate=16, nb_layers_per_block=5, upsampling_type='deconv')
+    #model = DenseNet((32, 32, 3))
     model.summary()
+
+    plot_model(model, 'test.png', show_shapes=True)
