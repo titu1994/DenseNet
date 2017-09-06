@@ -10,10 +10,10 @@ from keras.datasets import cifar10
 from keras.utils import np_utils
 from keras.preprocessing.image import ImageDataGenerator
 from keras.optimizers import Adam
-from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
+from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
 from keras import backend as K
 
-batch_size = 64
+batch_size = 100
 nb_classes = 10
 nb_epoch = 300
 
@@ -24,15 +24,15 @@ img_dim = (img_channels, img_rows, img_cols) if K.image_dim_ordering() == "th" e
 depth = 40
 nb_dense_block = 3
 growth_rate = 12
-nb_filter = 16
+nb_filter = -1
 dropout_rate = 0.0 # 0.0 for data augmentation
 
 model = densenet.DenseNet(img_dim, classes=nb_classes, depth=depth, nb_dense_block=nb_dense_block,
-                          growth_rate=growth_rate, nb_filter=nb_filter, dropout_rate=dropout_rate)
+                          growth_rate=growth_rate, nb_filter=nb_filter, dropout_rate=dropout_rate, weights=None)
 print("Model created")
 
 model.summary()
-optimizer = Adam(lr=1e-4) # Using Adam instead of SGD to speed up training
+optimizer = Adam(lr=1e-3) # Using Adam instead of SGD to speed up training
 model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=["accuracy"])
 print("Finished compiling")
 print("Building model...")
@@ -42,38 +42,39 @@ print("Building model...")
 trainX = trainX.astype('float32')
 testX = testX.astype('float32')
 
-trainX /= 255.
-testX /= 255.
+trainX = densenet.preprocess_input(trainX)
+testX = densenet.preprocess_input(testX)
 
 Y_train = np_utils.to_categorical(trainY, nb_classes)
 Y_test = np_utils.to_categorical(testY, nb_classes)
 
 generator = ImageDataGenerator(rotation_range=15,
                                width_shift_range=5./32,
-                               height_shift_range=5./32)
+                               height_shift_range=5./32,
+                               horizontal_flip=True)
 
 generator.fit(trainX, seed=0)
 
 # Load model
-weights_file="weights/DenseNet-40-12CIFAR10-tf.h5"
+weights_file="weights/DenseNet-40-12-CIFAR10.h5"
 if os.path.exists(weights_file):
-    model.load_weights(weights_file)
+    #model.load_weights(weights_file, by_name=True)
     print("Model loaded.")
 
 out_dir="weights/"
 
-lr_reducer      = ReduceLROnPlateau(monitor='val_loss', factor=np.sqrt(0.1), 
-                                    cooldown=0, patience=10, min_lr=0.5e-6)
-early_stopper   = EarlyStopping(monitor='val_acc', min_delta=0.0001, patience=20)
+lr_reducer      = ReduceLROnPlateau(monitor='val_acc', factor=np.sqrt(0.1),
+                                    cooldown=0, patience=5, min_lr=1e-5)
 model_checkpoint= ModelCheckpoint(weights_file, monitor="val_acc", save_best_only=True,
-                                  save_weights_only=True,mode='auto')
+                                  save_weights_only=True, verbose=1)
 
-callbacks=[lr_reducer,early_stopper,model_checkpoint]
+callbacks=[lr_reducer, model_checkpoint]
 
-model.fit_generator(generator.flow(trainX, Y_train, batch_size=batch_size), samples_per_epoch=len(trainX), nb_epoch=nb_epoch,
-                   callbacks=callbacks,
-                   validation_data=(testX, Y_test),
-                   nb_val_samples=testX.shape[0], verbose=2)
+model.fit_generator(generator.flow(trainX, Y_train, batch_size=batch_size),
+                    steps_per_epoch=len(trainX) // batch_size, epochs=nb_epoch,
+                    callbacks=callbacks,
+                    validation_data=(testX, Y_test),
+                    validation_steps=testX.shape[0] // batch_size, verbose=1)
 
 yPreds = model.predict(testX)
 yPred = np.argmax(yPreds, axis=1)
