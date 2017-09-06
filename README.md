@@ -36,7 +36,7 @@ The accuracy of DenseNet has been provided in the paper, beating all previous be
 
 # Usage
 
-Import the `densenet.py` script and use the `create_dense_net(...)` method to create a DenseNet model
+Import the `densenet.py` script and use the `DenseNet(...)` method to create a custom DenseNet model with a variety of parameters.
 
 Examples : 
 
@@ -46,19 +46,28 @@ import densenet
 # 'th' dim-ordering or 'tf' dim-ordering
 image_dim = (3, 32, 32) or image_dim = (32, 32, 3)
 
-model = densenet.create_dense_net(nb_classes=10, img_dim=image_dim, depth=40, growth_rate=12, 
-								   bottleneck=True, reduction=0.5)
+model = densenet.DenseNet(nb_classes=10, img_dim=image_dim, depth=40, growth_rate=12, 
+			  bottleneck=True, reduction=0.5)
 ```
 
-Weights for the DenseNet-40-12 model are provided ([in the release tab](https://github.com/titu1994/DenseNet/releases)) which have been trained on CIFAR 10. Please extract the appropriate weight file and add it to your weights directory. The default one is for Theano Backend with TH dim ordering.
+Or, Import a pre-built DenseNet model for ImageNet, with some of these models having pre-trained weights (121, 161 and 169).
 
-1. Run the cifar10.py script to train the DenseNet 40 model 
-2. Comment out the `model.fit_generator(...)` line and uncomment the `model.load_weights("weights/DenseNet-40-12-CIFAR10.h5")` line to test the classification accuracy.
+Example : 
+```
+import densenet
 
-The current classification accuracy of DenseNet-40-12 is 94.74 %, compared to the accuracy given in the paper - 94.76 %.
+# 'th' dim-ordering or 'tf' dim-ordering
+image_dim = (3, 224, 224) or image_dim = (224, 224, 3)
+
+model = densenet.DenseNetImageNet121(image_dim)
+```
+
+Weights for the DenseNetImageNet121, DenseNetImageNet161 and DenseNetImageNet169 models are provided ([in the release tab](https://github.com/titu1994/DenseNet/releases)) and will be automatically downloaded when first called. They have been trained on ImageNet. The weights were ported from the repository https://github.com/flyyufelix/DenseNet-Keras.
+
+
 
 # Requirements
 
 - Keras
-- Theano (tested) / Tensorflow (not tested, weights not provided)
+- Theano (weights not tested) / Tensorflow (tested) / CNTK (weights not tested)
 - h5Py
