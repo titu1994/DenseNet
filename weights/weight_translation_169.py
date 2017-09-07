@@ -113,3 +113,16 @@ model.save_weights('DenseNet-BC-169-32.h5', overwrite=True)
 
 print("Finished saving weights")
 
+import shutil
+shutil.copy('DenseNet-BC-169-32.h5', 'DenseNet-BC-169-32-no-top.h5')
+
+f = h5py.File('DenseNet-BC-169-32-no-top.h5')
+layers = f.attrs['layer_names']
+f.attrs['layer_names'] = layers[:-2]
+
+for layer in layers[-2:]:
+    del f[layer]
+
+f.close()
+
+print("Finished saving no-top weights")
