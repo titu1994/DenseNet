@@ -187,7 +187,7 @@ def DenseNet(input_shape=None, depth=40, nb_dense_block=3, growth_rate=12, nb_fi
                 weights_path = get_file('DenseNet-BC-121-32-no-top.h5',
                                         DENSENET_121_WEIGHTS_PATH_NO_TOP,
                                         cache_subdir='models',
-                                        md5_hash='8804bcb37da5be4a52dc4e45d4425ba7')
+                                        md5_hash='55e62a6358af8a0af0eedf399b5aea99')
             model.load_weights(weights_path)
             weights_loaded = True
 
@@ -202,7 +202,7 @@ def DenseNet(input_shape=None, depth=40, nb_dense_block=3, growth_rate=12, nb_fi
                 weights_path = get_file('DenseNet-BC-161-48-no-top.h5',
                                         DENSENET_161_WEIGHTS_PATH_NO_TOP,
                                         cache_subdir='models',
-                                        md5_hash='d38903b8732fe238c91dac7859271f26')
+                                        md5_hash='1a9476b79f6b7673acaa2769e6427b92')
             model.load_weights(weights_path)
             weights_loaded = True
 
@@ -217,7 +217,7 @@ def DenseNet(input_shape=None, depth=40, nb_dense_block=3, growth_rate=12, nb_fi
                 weights_path = get_file('DenseNet-BC-169-32-no-top.h5',
                                         DENSENET_169_WEIGHTS_PATH_NO_TOP,
                                         cache_subdir='models',
-                                        md5_hash='a664d78a30ddd217dd38c0bb8d258461')
+                                        md5_hash='89c19e8276cfd10585d5fadc1df6859e')
             model.load_weights(weights_path)
             weights_loaded = True
 
