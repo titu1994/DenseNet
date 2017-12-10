@@ -46,7 +46,7 @@ import densenet
 # 'th' dim-ordering or 'tf' dim-ordering
 image_dim = (3, 32, 32) or image_dim = (32, 32, 3)
 
-model = densenet.DenseNet(nb_classes=10, img_dim=image_dim, depth=40, growth_rate=12, 
+model = densenet.DenseNet(classes=10, input_shape=image_dim, depth=40, growth_rate=12, 
 			  bottleneck=True, reduction=0.5)
 ```
 
@@ -59,7 +59,7 @@ import densenet
 # 'th' dim-ordering or 'tf' dim-ordering
 image_dim = (3, 224, 224) or image_dim = (224, 224, 3)
 
-model = densenet.DenseNetImageNet121(image_dim)
+model = densenet.DenseNetImageNet121(input_shape=image_dim)
 ```
 
 Weights for the DenseNetImageNet121, DenseNetImageNet161 and DenseNetImageNet169 models are provided ([in the release tab](https://github.com/titu1994/DenseNet/releases)) and will be automatically downloaded when first called. They have been trained on ImageNet. The weights were ported from the repository https://github.com/flyyufelix/DenseNet-Keras.
