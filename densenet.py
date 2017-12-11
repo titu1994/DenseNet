@@ -767,7 +767,9 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
                                                      grow_nb_filters=False)
 
     if include_top:
-        x = Conv2D(nb_classes, (1, 1), activation='linear', padding='same', use_bias=False)(x_up)
+        # not the concatenation of the input with the feature maps concat_list[0] in the decompression path
+        l = concatenate(concat_list[1:], axis=concat_axis)        
+        x = Conv2D(nb_classes, (1, 1), activation='linear', padding='same', use_bias=False)(l)
 
         if K.image_data_format() == 'channels_first':
             channel, row, col = input_shape
