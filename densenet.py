@@ -604,6 +604,10 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
         if nb_layers_per_block == -1:
             assert (depth - 4) % 3 == 0, 'Depth must be 3 N + 4 if nb_layers_per_block == -1'
             count = int((depth - 4) / 3)
+
+            if bottleneck:
+                count = count // 2
+
             nb_layers = [count for _ in range(nb_dense_block)]
             final_nb_layer = count
         else:
@@ -789,7 +793,8 @@ if __name__ == '__main__':
 
     from keras.utils.vis_utils import plot_model
     #model = DenseNetFCN((32, 32, 3), growth_rate=16, nb_layers_per_block=[4, 5, 7, 10, 12, 15], upsampling_type='deconv')
-    model = DenseNet((32, 32, 3), weights=None)
+    model = DenseNet((32, 32, 3), depth=100, nb_dense_block=3,
+                     growth_rate=12, bottleneck=True, reduction=0.5, weights=None)
     model.summary()
 
-    plot_model(model, 'test.png', show_shapes=True)
+    #plot_model(model, 'test.png', show_shapes=True)
