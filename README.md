@@ -22,9 +22,9 @@ It features several improvements such as :
 The Bottleneck - Compressed DenseNets offer further performance benefits, such as reduced number of parameters, with similar or better performance. 
 
 - Take into consideration the DenseNet-100-12 model, with nearly 7 million parameters against with the DenseNet-BC-100-12, with just 0.8 million parameters.
-The BC model acheives 4.51 % error in comparison to the original models' 4.10 % error
+The BC model achieves 4.51 % error in comparison to the original models' 4.10 % error
 
-- The best original model, DenseNet-100-24 (27.2 million parameters) acheives 3.74 % error, whereas the DenseNet-BC-190-40 (25.6 million parameters) acheives
+- The best original model, DenseNet-100-24 (27.2 million parameters) achieves 3.74 % error, whereas the DenseNet-BC-190-40 (25.6 million parameters) achieves
 3.46 % error which is a new state of the art performance on CIFAR-10.
 
 Dense Nets have an architecture which can be shown in the following image from the paper: <br>
